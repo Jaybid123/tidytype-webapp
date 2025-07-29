@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TidyType Assistant</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 2rem;}
+    textarea {width: 100%; height: 80px;}
+    input[type=text] {width: 100%;}
+    .section {margin-bottom: 2rem;}
+  </style>
+</head>
+<body>
+  <h1>TidyType Assistant</h1>
+
+  <div class="section" id="rewrite">
+    <h2>Rewrite Text</h2>
+    <textarea id="rewrite-input" placeholder="Enter text..."></textarea>
+    <button onclick="rewrite()">Rewrite</button>
+    <pre id="rewrite-output"></pre>
+  </div>
+
+  <div class="section" id="clarify">
+    <h2>Clarify Concept</h2>
+    <input id="clarify-input" placeholder="Concept (e.g., Flask)" />
+    <button onclick="clarify()">Clarify</button>
+    <pre id="clarify-output"></pre>
+  </div>
+
+  <div class="section" id="answer">
+    <h2>Technical Question</h2>
+    <input id="question-input" placeholder="Ask a question" />
+    <button onclick="answer()">Ask</button>
+    <pre id="answer-output"></pre>
+  </div>
+
+  <div class="section" id="debug">
+    <h2>Debug Code</h2>
+    <textarea id="debug-input" placeholder="Enter code snippet..."></textarea>
+    <button onclick="debugCode()">Check</button>
+    <pre id="debug-output"></pre>
+  </div>
+
+  <script>
+    async function rewrite() {
+      const text = document.getElementById('rewrite-input').value;
+      const resp = await fetch('/api/rewrite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text})
+      });
+      const data = await resp.json();
+      document.getElementById('rewrite-output').textContent = data.rewritten || data.error;
+    }
+
+    async function clarify() {
+      const concept = document.getElementById('clarify-input').value;
+      const resp = await fetch('/api/clarify?concept=' + encodeURIComponent(concept));
+      const data = await resp.json();
+      document.getElementById('clarify-output').textContent = data.summary || data.error;
+    }
+
+    async function answer() {
+      const q = document.getElementById('question-input').value;
+      const resp = await fetch('/api/answer?q=' + encodeURIComponent(q));
+      const data = await resp.json();
+      if (data.answer) {
+        document.getElementById('answer-output').textContent = data.answer.title + '\n' + data.answer.link;
+      } else {
+        document.getElementById('answer-output').textContent = data.error;
+      }
+    }
+
+    async function debugCode() {
+      const code = document.getElementById('debug-input').value;
+      const resp = await fetch('/api/debug', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code})
+      });
+      const data = await resp.json();
+      document.getElementById('debug-output').textContent = data.result || data.error;
+    }
+  </script>
+</body>
+</html>
